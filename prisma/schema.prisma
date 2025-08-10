@@ -3,211 +3,248 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-enum UserRole {
-  LEARNER
-  EXPERT
+enum Role { 
+  learner 
+  expert 
 }
 
-enum BookingStatus {
-  PENDING
-  AWAITING_CONFIRMATION
-  CONFIRMED
-  COMPLETED
-  CANCELLED
-  REFUNDED
-  NO_SHOW
+enum SlotState { 
+  open 
+  held 
+  booked 
+  blocked 
 }
 
-enum PaymentStatus {
-  REQUIRES_CAPTURE
-  PAID
-  REFUNDED
+enum BookingStatus { 
+  pending 
+  awaiting_confirmation 
+  confirmed 
+  completed 
+  cancelled 
+  refunded 
+  no_show 
 }
 
-enum NotificationChannel {
-  IN_APP
-  EMAIL
+enum PaymentStatus { 
+  requires_capture 
+  paid 
+  refunded 
 }
 
-enum NotificationType {
-  BOOKING_CREATED
-  BOOKING_ACCEPTED
-  BOOKING_REJECTED
-  REMINDER_24H
-  REMINDER_1H
-  REMINDER_5M
-  REVIEW_REQUEST
+enum NotificationChannel { 
+  email 
+  in_app 
+}
+
+enum NotificationType { 
+  BOOKING_AWAITING_CONFIRMATION 
+  BOOKING_CONFIRMED_ICS 
+  BOOKING_DECLINED 
+  REMINDER_24H 
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  avatar       String?
-  role         UserRole
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  expertProfile ExpertProfile?
-  bookingsAsLearner Booking[] @relation("BookingLearner")
-  bookingsAsExpert  Booking[] @relation("BookingExpert")
-  sessionsAsLearner Session[] @relation("SessionLearner")
-  sessionsAsExpert  Session[] @relation("SessionExpert")
-  reviewsGiven     Review[]  @relation("ReviewGiver")
-  reviewsReceived  Review[]  @relation("ReviewReceiver")
-  notifications    Notification[]
-  auditLogs       AuditLog[]
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  bio             String?   @db.Text
+  avatarUrl       String?
+  timeZone        String?   // e.g. "Europe/Copenhagen"
+  locale          String?   // e.g. "da-DK"
+  role            Role
+  supabaseUserId  String    @unique
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  @@map("users")
+  // Relations
+  expertProfile   ExpertProfile?
+  learnerBookings Booking[]  @relation("LearnerBookings")
+  expertBookings  Booking[]  @relation("ExpertUserBookings")
+  reviews         Review[]   @relation("LearnerReviews")
+  auditLogs       AuditLog[] @relation("AuditActor")
+  notifications   Notification[]
+
+  @@index([role, createdAt])
 }
 
 model ExpertProfile {
-  id          String @id @default(cuid())
-  userId      String @unique
-  bio         String?
-  expertise   String[]
-  hourlyRate  Int
-  currency    String @default("DKK")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  availabilitySlots AvailabilitySlot[]
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  displayName    String?
+  headline       String?
+  description    String?   @db.Text
+  tags           String[]  // simple array; use join table later if needed
+  hourlyRate     Decimal   @db.Decimal(10, 2)
+  currency       String    // ISO-4217
+  isPublished    Boolean   @default(false)
+  avgRating      Decimal?  @db.Decimal(3, 2)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  @@map("expert_profiles")
+  // Relations
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availability   AvailabilitySlot[]
+  bookings       Booking[]
+  reviews        Review[]
+
+  @@index([isPublished, createdAt])
 }
 
 model AvailabilitySlot {
-  id           String   @id @default(cuid())
-  expertId     String
-  dayOfWeek    Int      // 0-6 (Sunday-Saturday)
-  startTime    String   // HH:MM format
-  endTime      String   // HH:MM format
-  isRecurring  Boolean  @default(true)
-  specificDate DateTime? // For one-time slots
-  isAvailable  Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  expert   ExpertProfile @relation(fields: [expertId], references: [id], onDelete: Cascade)
-  bookings Booking[]
+  id               String    @id @default(cuid())
+  expertProfileId  String
+  startAt          DateTime
+  endAt            DateTime
+  durationMinutes  Int
+  state            SlotState @default(open)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  @@map("availability_slots")
+  // Relations
+  expertProfile    ExpertProfile   @relation(fields: [expertProfileId], references: [id], onDelete: Cascade)
+  booking          Booking?
+
+  @@index([expertProfileId, startAt])
+
+  // NOTE: Enforce endAt > startAt in application logic or via a raw SQL CHECK in a separate migration.
 }
 
 model Booking {
-  id                String        @id @default(cuid())
-  learnerId         String
-  expertId          String
-  availabilitySlotId String
-  scheduledAt       DateTime
-  status            BookingStatus @default(PENDING)
-  totalAmount       Int
-  currency          String        @default("DKK")
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
-  learner          User              @relation("BookingLearner", fields: [learnerId], references: [id])
-  expert           User              @relation("BookingExpert", fields: [expertId], references: [id])
-  availabilitySlot AvailabilitySlot  @relation(fields: [availabilitySlotId], references: [id])
+  id               String    @id @default(cuid())
+  learnerId        String
+  expertProfileId  String
+  expertUserId     String     // denormalized for faster joins; keep in sync with ExpertProfile.userId
+  slotId           String     @unique
+  status           BookingStatus
+  // pricing snapshot
+  amount           Decimal    @db.Decimal(10, 2)
+  currency         String
+  // display TZ snapshots
+  learnerTimeZone  String?
+  expertTimeZone   String?
+  noteToExpert     String?    @db.Text
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  // Relations
+  learner          User           @relation("LearnerBookings", fields: [learnerId], references: [id], onDelete: Restrict)
+  expertUser       User           @relation("ExpertUserBookings", fields: [expertUserId], references: [id], onDelete: Restrict)
+  expertProfile    ExpertProfile  @relation(fields: [expertProfileId], references: [id], onDelete: Restrict)
+  slot             AvailabilitySlot @relation(fields: [slotId], references: [id], onDelete: Restrict)
   payment          Payment?
   session          Session?
-  auditLogs        AuditLog[]
+  review           Review?
+  notifications    Notification[]
 
-  @@map("bookings")
+  @@index([expertProfileId, createdAt])
+  @@index([learnerId, createdAt])
 }
 
 model Payment {
-  id                    String        @id @default(cuid())
-  bookingId             String        @unique
-  stripePaymentIntentId String        @unique
-  amount                Int
-  currency              String        @default("DKK")
-  captureOnAccept       Boolean       @default(true)
-  status                PaymentStatus @default(REQUIRES_CAPTURE)
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-  
-  booking    Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  auditLogs  AuditLog[]
+  id                   String        @id @default(cuid())
+  bookingId            String        @unique
+  paymentIntentId      String        @unique
+  paymentMethodId      String?
+  captureOnAccept      Boolean       @default(true)
+  status               PaymentStatus
+  amount               Decimal       @db.Decimal(10, 2)
+  currency             String
+  refundedAmount       Decimal       @default(0) @db.Decimal(10, 2)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
-  @@map("payments")
+  booking              Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  notifications        Notification[]
+
+  @@index([status, createdAt])
 }
 
 model Session {
-  id             String    @id @default(cuid())
-  bookingId      String    @unique
-  learnerId      String
-  expertId       String
-  zoomMeetingId  String?
-  zoomJoinUrl    String?
-  zoomStartUrl   String?
-  startedAt      DateTime?
-  endedAt        DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  learner User    @relation("SessionLearner", fields: [learnerId], references: [id])
-  expert  User    @relation("SessionExpert", fields: [expertId], references: [id])
-  reviews Review[]
+  id                 String   @id @default(cuid())
+  bookingId          String   @unique
+  provider           String   // "zoom"
+  meetingId          String?
+  hostJoinUrl        String?
+  participantJoinUrl String?
+  password           String?
+  scheduledStartAt   DateTime?
+  scheduledEndAt     DateTime?
+  actualStartAt      DateTime?
+  actualEndAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  @@map("sessions")
+  booking            Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  notifications      Notification[]
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  sessionId String
-  giverId   String
-  receiverId String
-  rating    Int      // 1-5
-  comment   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  session  Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  giver    User    @relation("ReviewGiver", fields: [giverId], references: [id])
-  receiver User    @relation("ReviewReceiver", fields: [receiverId], references: [id])
+  id               String   @id @default(cuid())
+  bookingId        String   @unique
+  expertProfileId  String
+  learnerId        String
+  rating           Int
+  comment          String?  @db.Text
+  isVisible        Boolean  @default(true)
+  createdAt        DateTime @default(now())
 
-  @@unique([sessionId, giverId])
-  @@map("reviews")
+  booking          Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  expertProfile    ExpertProfile @relation(fields: [expertProfileId], references: [id], onDelete: Restrict)
+  learner          User          @relation("LearnerReviews", fields: [learnerId], references: [id], onDelete: Restrict)
+
+  @@index([expertProfileId, createdAt])
+
+  // NOTE: Enforce rating between 1..5 in application logic or via a raw SQL CHECK in a separate migration.
 }
 
 model Notification {
-  id          String              @id @default(cuid())
-  userId      String
-  type        NotificationType
-  title       String
-  message     String
-  channels    NotificationChannel[]
-  isRead      Boolean             @default(false)
-  sentAt      DateTime?
-  errorLog    String?
-  createdAt   DateTime            @default(now())
-  
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String               @id @default(cuid())
+  toUserId      String?
+  type          NotificationType
+  channel       NotificationChannel
+  subject       String?
+  payload       Json
+  sentAt        DateTime?
+  failedAt      DateTime?
+  errorMessage  String?
+  bookingId     String?
+  paymentId     String?
+  sessionId     String?
+  createdAt     DateTime @default(now())
 
-  @@map("notifications")
+  toUser        User?        @relation(fields: [toUserId], references: [id], onDelete: SetNull)
+  booking       Booking?     @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  payment       Payment?     @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  session       Session?     @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([toUserId, createdAt])
+  @@index([type, createdAt])
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  userId     String?
-  action     String
-  resource   String
-  resourceId String
-  details    Json?
-  ipAddress  String?
-  userAgent  String?
-  createdAt  DateTime @default(now())
-  
-  user    User?    @relation(fields: [userId], references: [id])
-  booking Booking? @relation(fields: [resourceId], references: [id], map: "audit_logs_booking_fkey")
-  payment Payment? @relation(fields: [resourceId], references: [id], map: "audit_logs_payment_fkey")
+  id          String   @id @default(cuid())
+  actorUserId String?
+  entityType  String
+  entityId    String
+  action      String
+  metadata    Json?
+  createdAt   DateTime @default(now())
 
-  @@map("audit_logs")
+  actor       User? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, createdAt])
 }
+
+/// =====================
+/// RLS guidance (comments)
+/// - Public: read only published ExpertProfile fields and derived open slots (via view/RPC).
+/// - Learners: read/write own Bookings; read own Payment (masked); read own Session participant URL.
+/// - Experts: read/write own ExpertProfile & AvailabilitySlot; read Bookings for their ExpertProfile; read Session host URL.
+/// - Admin/system only: mutate Payment state; insert AuditLog.
+/// =====================

@@ -55,8 +55,9 @@ cp .env.local.example .env.local
 3. Configure your `.env.local`:
 
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/ai-rookie"
+# Database - Supabase Connections
+DATABASE_URL="postgresql://pooled-connection-url"      # Pooled (runtime queries)
+DIRECT_URL="postgresql://direct-connection-url"        # Direct (migrations only)
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
@@ -94,10 +95,19 @@ SMTP_PASSWORD="your-app-password"
 
 ### Database Setup
 
+**Important**: This project uses Supabase with both pooled and direct connections:
+
+- `DATABASE_URL`: Pooled connection for runtime queries (better performance)
+- `DIRECT_URL`: Direct connection for migrations (required by Prisma)
+
+Both URLs can be found in your Supabase project settings under Database → Connection pooling.
+
 1. Run database migrations:
 ```bash
 npm run db:migrate
 ```
+
+**Note**: Database-level constraints (e.g., `endAt > startAt`, `rating 1..5`) should be added via raw SQL migrations if required, as Prisma schema doesn't support `@@check` directives.
 
 2. Generate Prisma client:
 ```bash
