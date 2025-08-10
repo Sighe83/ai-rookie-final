@@ -206,8 +206,8 @@ model AuditLog {
   createdAt  DateTime @default(now())
   
   user    User?    @relation(fields: [userId], references: [id])
-  booking Booking? @relation(fields: [resourceId], references: [id])
-  payment Payment? @relation(fields: [resourceId], references: [id])
+  booking Booking? @relation(fields: [resourceId], references: [id], map: "audit_logs_booking_fkey")
+  payment Payment? @relation(fields: [resourceId], references: [id], map: "audit_logs_payment_fkey")
 
   @@map("audit_logs")
 }
