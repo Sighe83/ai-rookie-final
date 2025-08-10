@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  LEARNER
+  EXPERT
+}
+
+enum BookingStatus {
+  PENDING
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  REQUIRES_CAPTURE
+  PAID
+  REFUNDED
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+}
+
+enum NotificationType {
+  BOOKING_CREATED
+  BOOKING_ACCEPTED
+  BOOKING_REJECTED
+  REMINDER_24H
+  REMINDER_1H
+  REMINDER_5M
+  REVIEW_REQUEST
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  avatar       String?
+  role         UserRole
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  expertProfile ExpertProfile?
+  bookingsAsLearner Booking[] @relation("BookingLearner")
+  bookingsAsExpert  Booking[] @relation("BookingExpert")
+  sessionsAsLearner Session[] @relation("SessionLearner")
+  sessionsAsExpert  Session[] @relation("SessionExpert")
+  reviewsGiven     Review[]  @relation("ReviewGiver")
+  reviewsReceived  Review[]  @relation("ReviewReceiver")
+  notifications    Notification[]
+  auditLogs       AuditLog[]
+
+  @@map("users")
+}
+
+model ExpertProfile {
+  id          String @id @default(cuid())
+  userId      String @unique
+  bio         String?
+  expertise   String[]
+  hourlyRate  Int
+  currency    String @default("DKK")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availabilitySlots AvailabilitySlot[]
+
+  @@map("expert_profiles")
+}
+
+model AvailabilitySlot {
+  id           String   @id @default(cuid())
+  expertId     String
+  dayOfWeek    Int      // 0-6 (Sunday-Saturday)
+  startTime    String   // HH:MM format
+  endTime      String   // HH:MM format
+  isRecurring  Boolean  @default(true)
+  specificDate DateTime? // For one-time slots
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  expert   ExpertProfile @relation(fields: [expertId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@map("availability_slots")
+}
+
+model Booking {
+  id                String        @id @default(cuid())
+  learnerId         String
+  expertId          String
+  availabilitySlotId String
+  scheduledAt       DateTime
+  status            BookingStatus @default(PENDING)
+  totalAmount       Int
+  currency          String        @default("DKK")
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  learner          User              @relation("BookingLearner", fields: [learnerId], references: [id])
+  expert           User              @relation("BookingExpert", fields: [expertId], references: [id])
+  availabilitySlot AvailabilitySlot  @relation(fields: [availabilitySlotId], references: [id])
+  payment          Payment?
+  session          Session?
+  auditLogs        AuditLog[]
+
+  @@map("bookings")
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  bookingId             String        @unique
+  stripePaymentIntentId String        @unique
+  amount                Int
+  currency              String        @default("DKK")
+  captureOnAccept       Boolean       @default(true)
+  status                PaymentStatus @default(REQUIRES_CAPTURE)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  
+  booking    Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  auditLogs  AuditLog[]
+
+  @@map("payments")
+}
+
+model Session {
+  id             String    @id @default(cuid())
+  bookingId      String    @unique
+  learnerId      String
+  expertId       String
+  zoomMeetingId  String?
+  zoomJoinUrl    String?
+  zoomStartUrl   String?
+  startedAt      DateTime?
+  endedAt        DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  learner User    @relation("SessionLearner", fields: [learnerId], references: [id])
+  expert  User    @relation("SessionExpert", fields: [expertId], references: [id])
+  reviews Review[]
+
+  @@map("sessions")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  sessionId String
+  giverId   String
+  receiverId String
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  session  Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  giver    User    @relation("ReviewGiver", fields: [giverId], references: [id])
+  receiver User    @relation("ReviewReceiver", fields: [receiverId], references: [id])
+
+  @@unique([sessionId, giverId])
+  @@map("reviews")
+}
+
+model Notification {
+  id          String              @id @default(cuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String
+  channels    NotificationChannel[]
+  isRead      Boolean             @default(false)
+  sentAt      DateTime?
+  errorLog    String?
+  createdAt   DateTime            @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  
+  user    User?    @relation(fields: [userId], references: [id])
+  booking Booking? @relation(fields: [resourceId], references: [id])
+  payment Payment? @relation(fields: [resourceId], references: [id])
+
+  @@map("audit_logs")
+}
