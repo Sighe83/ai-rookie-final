@@ -2,17 +2,24 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
+import { Button } from '@/components/ui/button'
 
 export function LogoutButton() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   const handleLogout = async () => {
     setIsLoading(true)
     
     try {
-      await fetch('/api/auth/sign-out', { method: 'POST' })
-      router.push('/login')
+      await supabase.auth.signOut()
+      router.push('/')
       router.refresh()
     } catch (error) {
       console.error('Logout failed:', error)
@@ -22,12 +29,13 @@ export function LogoutButton() {
   }
 
   return (
-    <button 
+    <Button 
+      variant="outline"
       onClick={handleLogout}
       disabled={isLoading}
-      className="text-sm text-red-600 hover:text-red-500 disabled:opacity-50"
+      className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
     >
       {isLoading ? 'Signing out...' : 'Sign out'}
-    </button>
+    </Button>
   )
 }

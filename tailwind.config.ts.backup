@@ -1,0 +1,59 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
+      colors: {
+        primary: {
+          DEFAULT: '#3B82F6', // Blue 500
+          hover: '#2563EB',   // Blue 600
+        },
+        secondary: {
+          DEFAULT: '#E5E7EB', // Gray 200
+          hover: '#D1D5DB',   // Gray 300
+          text: '#374151',    // Gray 700
+        },
+        veteran: { // For context on veteran/expert-related items
+          text: '#5B21B6',    // Violet 800
+          bg: '#EDE9FE',      // Violet 100
+        },
+        success: {
+          DEFAULT: '#10B981', // Emerald 500
+          bg: '#ECFDF5',      // Green 50
+          text: '#065F46',    // Green 800
+        },
+        warning: {
+          bg: '#FFFBEB',      // Amber 50
+          text: '#B45309',    // Amber 700
+        },
+        error: {
+          DEFAULT: '#EF4444', // Red 500
+          text: '#991B1B',    // Red 800
+        },
+        surface: '#F9FAFB', // Gray 50
+        text: {
+          DEFAULT: '#1F2937', // Gray 800
+          light: '#6B7280',   // Gray 500
+        }
+      },
+      borderRadius: {
+        'lg': '0.75rem',
+        'xl': '1rem',
+        'full': '9999px'
+      },
+      boxShadow: {
+        'subtle': '0 4px 12px rgba(0, 0, 0, 0.05)'
+      }
+    },
+  },
+  plugins: [],
+};
+export default config;
