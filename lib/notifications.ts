@@ -19,24 +19,32 @@ export interface NotificationTemplate {
   emailBody?: string
 }
 
-export const notificationTemplates: Record<NotificationType, NotificationTemplate> = {
+export const notificationTemplates: Record<
+  NotificationType,
+  NotificationTemplate
+> = {
   BOOKING_CREATED: {
     title: 'Ny booking oprettet',
     message: 'Din booking er oprettet og afventer godkendelse fra eksperten.',
     emailSubject: 'Booking oprettet - Afventer godkendelse',
-    emailBody: 'Din booking er oprettet og afventer godkendelse fra eksperten. Du vil modtage en bekræftelse når bookingen er godkendt.',
+    emailBody:
+      'Din booking er oprettet og afventer godkendelse fra eksperten. Du vil modtage en bekræftelse når bookingen er godkendt.',
   },
   BOOKING_ACCEPTED: {
     title: 'Booking godkendt',
-    message: 'Din booking er blevet godkendt! Du vil snart modtage et Zoom-link.',
+    message:
+      'Din booking er blevet godkendt! Du vil snart modtage et Zoom-link.',
     emailSubject: 'Booking godkendt - Zoom-link følger',
-    emailBody: 'Din booking er blevet godkendt! Du vil snart modtage et Zoom-link til din session.',
+    emailBody:
+      'Din booking er blevet godkendt! Du vil snart modtage et Zoom-link til din session.',
   },
   BOOKING_REJECTED: {
     title: 'Booking afvist',
-    message: 'Din booking er desværre blevet afvist. Betalingen er blevet refunderet.',
+    message:
+      'Din booking er desværre blevet afvist. Betalingen er blevet refunderet.',
     emailSubject: 'Booking afvist - Refundering behandles',
-    emailBody: 'Din booking er desværre blevet afvist. Betalingen vil blive refunderet inden for 3-5 arbejdsdage.',
+    emailBody:
+      'Din booking er desværre blevet afvist. Betalingen vil blive refunderet inden for 3-5 arbejdsdage.',
   },
   REMINDER_24H: {
     title: 'Påmindelse: Session om 24 timer',
@@ -48,19 +56,23 @@ export const notificationTemplates: Record<NotificationType, NotificationTemplat
     title: 'Påmindelse: Session om 1 time',
     message: 'Du har en session planlagt om 1 time.',
     emailSubject: 'Påmindelse: Session om 1 time',
-    emailBody: 'Du har en session planlagt om 1 time. Sørg for at have Zoom klar!',
+    emailBody:
+      'Du har en session planlagt om 1 time. Sørg for at have Zoom klar!',
   },
   REMINDER_5M: {
     title: 'Påmindelse: Session om 5 minutter',
-    message: 'Din session starter om 5 minutter. Klik på Zoom-linket for at deltage.',
+    message:
+      'Din session starter om 5 minutter. Klik på Zoom-linket for at deltage.',
     emailSubject: 'Påmindelse: Session starter nu',
-    emailBody: 'Din session starter om 5 minutter. Klik på Zoom-linket for at deltage.',
+    emailBody:
+      'Din session starter om 5 minutter. Klik på Zoom-linket for at deltage.',
   },
   REVIEW_REQUEST: {
     title: 'Bedøm din session',
     message: 'Hvordan var din session? Giv din bedømmelse og hjælp andre.',
     emailSubject: 'Bedøm din session',
-    emailBody: 'Hvordan var din session? Vi vil værdsætte din bedømmelse for at hjælpe andre brugere.',
+    emailBody:
+      'Hvordan var din session? Vi vil værdsætte din bedømmelse for at hjælpe andre brugere.',
   },
 }
 
@@ -78,7 +90,7 @@ export async function createNotification({
   customMessage?: string
 }) {
   const template = notificationTemplates[type]
-  
+
   const notification = await db.notification.create({
     data: {
       userId,
@@ -161,20 +173,20 @@ export async function scheduleReminders(bookingId: string, scheduledAt: Date) {
 
   // Schedule reminders for both learner and expert
   const users = [booking.learner, booking.expert]
-  
+
   for (const user of users) {
     // Schedule 24h reminder
     if (reminder24h > new Date()) {
       // In production, schedule this job
       console.log(`Schedule 24h reminder for ${user.email} at ${reminder24h}`)
     }
-    
+
     // Schedule 1h reminder
     if (reminder1h > new Date()) {
       // In production, schedule this job
       console.log(`Schedule 1h reminder for ${user.email} at ${reminder1h}`)
     }
-    
+
     // Schedule 5m reminder
     if (reminder5m > new Date()) {
       // In production, schedule this job

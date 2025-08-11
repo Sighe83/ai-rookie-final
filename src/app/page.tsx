@@ -1,6 +1,12 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
 export default function Home() {
   return (
@@ -11,7 +17,8 @@ export default function Home() {
             AI <span className="text-blue-600">Rookie</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Connect with expert developers for personalized coding sessions. Learn faster with one-on-one mentorship.
+            Connect with expert developers for personalized coding sessions.
+            Learn faster with one-on-one mentorship.
           </p>
           <div className="flex gap-4 justify-center">
             <Button asChild size="lg">
@@ -32,7 +39,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Learn from experienced developers with real-world expertise in your tech stack.
+                Learn from experienced developers with real-world expertise in
+                your tech stack.
               </CardDescription>
             </CardContent>
           </Card>
@@ -45,7 +53,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Get tailored guidance based on your specific goals and learning pace.
+                Get tailored guidance based on your specific goals and learning
+                pace.
               </CardDescription>
             </CardContent>
           </Card>
@@ -58,7 +67,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                No subscriptions. Only pay for the sessions you book with secure Stripe payments.
+                No subscriptions. Only pay for the sessions you book with secure
+                Stripe payments.
               </CardDescription>
             </CardContent>
           </Card>
@@ -73,7 +83,8 @@ export default function Home() {
               </div>
               <h3 className="font-semibold mb-2">Browse Experts</h3>
               <p className="text-gray-600 text-sm">
-                Find the perfect mentor based on their expertise and availability.
+                Find the perfect mentor based on their expertise and
+                availability.
               </p>
             </div>
             <div className="text-center">

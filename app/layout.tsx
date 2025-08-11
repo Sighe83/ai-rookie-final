@@ -6,7 +6,8 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'AI Rookie - Learn Coding with Expert Mentors',
-  description: 'Connect with expert developers for personalized coding sessions and accelerate your learning journey.',
+  description:
+    'Connect with expert developers for personalized coding sessions and accelerate your learning journey.',
 }
 
 export default function RootLayout({
@@ -16,9 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        {children}
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }

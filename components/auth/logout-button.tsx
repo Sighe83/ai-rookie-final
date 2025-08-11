@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 export function LogoutButton() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -16,7 +16,7 @@ export function LogoutButton() {
 
   const handleLogout = async () => {
     setIsLoading(true)
-    
+
     try {
       await supabase.auth.signOut()
       router.push('/')
@@ -29,7 +29,7 @@ export function LogoutButton() {
   }
 
   return (
-    <Button 
+    <Button
       variant="outline"
       onClick={handleLogout}
       disabled={isLoading}

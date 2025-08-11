@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
     // Handle user.created event (when email is confirmed)
     if (body.type === 'user.created' && body.record) {
       const supabaseUser = body.record
-      
+
       // Check if user already exists in our database
       const existingUser = await prisma.user.findUnique({
-        where: { supabaseUserId: supabaseUser.id }
+        where: { supabaseUserId: supabaseUser.id },
       })
 
       if (!existingUser) {

@@ -11,7 +11,7 @@ async function main() {
 
   try {
     const hashedPassword = await hashPassword(password)
-    
+
     const expert = await prisma.user.create({
       data: {
         email,
@@ -19,7 +19,7 @@ async function main() {
         name,
         role: 'expert',
         supabaseUserId: null,
-      }
+      },
     })
 
     console.log('✅ Expert created successfully:')
@@ -31,7 +31,6 @@ async function main() {
     console.log('You can now log in with:')
     console.log(`   Email: ${email}`)
     console.log(`   Password: ${password}`)
-    
   } catch (error: any) {
     if (error.code === 'P2002') {
       console.log('❌ Expert with this email already exists')

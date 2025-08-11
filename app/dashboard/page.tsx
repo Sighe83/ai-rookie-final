@@ -4,7 +4,7 @@ import { LogoutButton } from '@/components/auth/logout-button'
 
 export default async function DashboardPage() {
   const user = await getUser()
-  
+
   if (!user) {
     redirect('/')
   }

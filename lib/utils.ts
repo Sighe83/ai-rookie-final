@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -13,7 +13,10 @@ export function formatCurrency(amount: number, currency: string = 'DKK') {
   }).format(amount / 100)
 }
 
-export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOptions) {
+export function formatDate(
+  date: Date | string,
+  options?: Intl.DateTimeFormatOptions
+) {
   return new Intl.DateTimeFormat('da-DK', {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -27,7 +30,15 @@ export function formatTime(time: string) {
 }
 
 export function getDayName(dayOfWeek: number) {
-  const days = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag']
+  const days = [
+    'Søndag',
+    'Mandag',
+    'Tirsdag',
+    'Onsdag',
+    'Torsdag',
+    'Fredag',
+    'Lørdag',
+  ]
   return days[dayOfWeek]
 }
 
