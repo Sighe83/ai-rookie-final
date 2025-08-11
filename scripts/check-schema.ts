@@ -11,7 +11,7 @@ function assert(condition: boolean, message: string): void {
 
 function main() {
   const schemaPath = path.join(process.cwd(), 'prisma/schema.prisma')
-  
+
   // Read schema file
   let schema: string
   try {
@@ -41,28 +41,41 @@ function main() {
   const enumChecks = [
     {
       name: 'Role',
-      values: ['learner', 'expert']
+      values: ['learner', 'expert'],
     },
     {
       name: 'SlotState',
-      values: ['open', 'held', 'booked', 'blocked']
+      values: ['open', 'held', 'booked', 'blocked'],
     },
     {
       name: 'BookingStatus',
-      values: ['pending', 'awaiting_confirmation', 'confirmed', 'completed', 'cancelled', 'refunded', 'no_show']
+      values: [
+        'pending',
+        'awaiting_confirmation',
+        'confirmed',
+        'completed',
+        'cancelled',
+        'refunded',
+        'no_show',
+      ],
     },
     {
       name: 'PaymentStatus',
-      values: ['requires_capture', 'paid', 'refunded']
+      values: ['requires_capture', 'paid', 'refunded'],
     },
     {
       name: 'NotificationChannel',
-      values: ['email', 'in_app']
+      values: ['email', 'in_app'],
     },
     {
       name: 'NotificationType',
-      values: ['BOOKING_AWAITING_CONFIRMATION', 'BOOKING_CONFIRMED_ICS', 'BOOKING_DECLINED', 'REMINDER_24H']
-    }
+      values: [
+        'BOOKING_AWAITING_CONFIRMATION',
+        'BOOKING_CONFIRMED_ICS',
+        'BOOKING_DECLINED',
+        'REMINDER_24H',
+      ],
+    },
   ]
 
   for (const enumDef of enumChecks) {
@@ -82,8 +95,15 @@ function main() {
 
   // Check required model names
   const requiredModels = [
-    'User', 'ExpertProfile', 'AvailabilitySlot', 'Booking', 
-    'Payment', 'Session', 'Review', 'Notification', 'AuditLog'
+    'User',
+    'ExpertProfile',
+    'AvailabilitySlot',
+    'Booking',
+    'Payment',
+    'Session',
+    'Review',
+    'Notification',
+    'AuditLog',
   ]
 
   for (const modelName of requiredModels) {
@@ -95,17 +115,27 @@ function main() {
 
   // Check LearnerReviews relation
   assert(
-    schema.includes('@relation("LearnerReviews")') && 
-    schema.match(/@relation\("LearnerReviews"/g)?.length === 2,
+    schema.includes('@relation("LearnerReviews")') &&
+      schema.match(/@relation\("LearnerReviews"/g)?.length === 2,
     'LearnerReviews relation must appear on both User.reviews and Review.learner'
   )
 
   // Verify specific relation placements
-  const userModelMatch = schema.match(/model User \{[^}]+reviews[^}]+@relation\("LearnerReviews"\)[^}]+\}/s)
-  assert(userModelMatch, 'User.reviews field must use @relation("LearnerReviews")')
+  const userModelMatch = schema.match(
+    /model User \{[^}]+reviews[^}]+@relation\("LearnerReviews"\)[^}]+\}/s
+  )
+  assert(
+    userModelMatch,
+    'User.reviews field must use @relation("LearnerReviews")'
+  )
 
-  const reviewModelMatch = schema.match(/model Review \{[^}]+learner[^}]+@relation\("LearnerReviews"[^}]+\}/s)
-  assert(reviewModelMatch, 'Review.learner field must use @relation("LearnerReviews")')
+  const reviewModelMatch = schema.match(
+    /model Review \{[^}]+learner[^}]+@relation\("LearnerReviews"[^}]+\}/s
+  )
+  assert(
+    reviewModelMatch,
+    'Review.learner field must use @relation("LearnerReviews")'
+  )
 
   console.log('✅ Schema checks passed')
 }

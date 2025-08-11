@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
@@ -62,10 +68,8 @@ export default function ExpertsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <CardDescription className="mb-4">
-                  {expert.bio}
-                </CardDescription>
-                
+                <CardDescription className="mb-4">{expert.bio}</CardDescription>
+
                 <div className="mb-6">
                   <h4 className="font-semibold mb-2">Expertise</h4>
                   <div className="flex flex-wrap gap-2">
@@ -78,9 +82,7 @@ export default function ExpertsPage() {
                 </div>
 
                 <Button asChild className="w-full">
-                  <Link href={`/experts/${expert.id}`}>
-                    View Profile
-                  </Link>
+                  <Link href={`/experts/${expert.id}`}>View Profile</Link>
                 </Button>
               </CardContent>
             </Card>

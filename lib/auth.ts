@@ -40,18 +40,19 @@ export async function createClient() {
 
 export async function getUser() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) return null
-  
+
   // Get user from our database using supabaseUserId
   const dbUser = await prisma.user.findUnique({
     where: { supabaseUserId: user.id },
     include: {
       expertProfile: true,
-    }
+    },
   })
-  
+
   return dbUser
 }
-

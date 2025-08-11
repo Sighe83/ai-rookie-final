@@ -31,7 +31,7 @@ async function getZoomAccessToken(): Promise<string> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${Buffer.from(
+      Authorization: `Basic ${Buffer.from(
         `${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`
       ).toString('base64')}`,
     },
@@ -56,7 +56,7 @@ export async function createZoomMeeting({
 }): Promise<ZoomMeetingResponse> {
   try {
     const accessToken = await getZoomAccessToken()
-    
+
     const meetingRequest: ZoomMeetingRequest = {
       topic,
       type: 2,
@@ -81,7 +81,7 @@ export async function createZoomMeeting({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(meetingRequest),
     })
@@ -107,11 +107,11 @@ export async function createZoomMeeting({
 export async function deleteZoomMeeting(meetingId: string): Promise<void> {
   try {
     const accessToken = await getZoomAccessToken()
-    
+
     await fetch(`https://api.zoom.us/v2/meetings/${meetingId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     })
   } catch (error) {

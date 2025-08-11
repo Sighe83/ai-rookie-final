@@ -20,8 +20,8 @@ async function main() {
   try {
     // First, try to find and delete from Supabase by email
     const { data: users } = await supabase.auth.admin.listUsers()
-    const supabaseUser = users.users.find(u => u.email === email)
-    
+    const supabaseUser = users.users.find((u) => u.email === email)
+
     if (supabaseUser) {
       const { error } = await supabase.auth.admin.deleteUser(supabaseUser.id)
       if (error) {
@@ -33,13 +33,13 @@ async function main() {
 
     // Find and delete from database
     const dbUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
     })
 
     if (dbUser) {
       console.log(`Found user in database: ${dbUser.id}`)
       await prisma.user.delete({
-        where: { email }
+        where: { email },
       })
       console.log('✅ Deleted user from database')
     } else {

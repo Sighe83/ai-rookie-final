@@ -1,18 +1,18 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   * {
     @apply border-gray-200;
   }
-  
+
   body {
     @apply bg-gray-50 font-sans text-gray-800;
   }
 
   /* Form input base styles */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
   select,
   textarea {
     @apply bg-gray-50 border border-gray-300 rounded-lg text-gray-800;

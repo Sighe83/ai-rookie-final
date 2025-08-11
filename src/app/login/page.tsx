@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
@@ -28,7 +34,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            
+
             <Button type="submit" className="w-full" size="lg">
               Send Magic Link
             </Button>
@@ -39,7 +45,9 @@ export default function LoginPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-500">Or continue with</span>
+              <span className="bg-white px-2 text-gray-500">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -68,7 +76,10 @@ export default function LoginPage() {
           <div className="text-center text-sm text-gray-600">
             <p>
               Don't have an account?{' '}
-              <Link href="/signup" className="font-medium text-blue-600 hover:underline">
+              <Link
+                href="/signup"
+                className="font-medium text-blue-600 hover:underline"
+              >
                 Sign up here
               </Link>
             </p>

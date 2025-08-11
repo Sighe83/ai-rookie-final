@@ -41,6 +41,7 @@ A comprehensive platform connecting learners with expert developers for personal
 ### Environment Setup
 
 1. Clone and install dependencies:
+
 ```bash
 git clone <repository>
 cd ai-rookie-final
@@ -48,6 +49,7 @@ npm install
 ```
 
 2. Copy environment variables:
+
 ```bash
 cp .env.local.example .env.local
 ```
@@ -103,6 +105,7 @@ SMTP_PASSWORD="your-app-password"
 Both URLs can be found in your Supabase project settings under Database → Connection pooling.
 
 1. Run database migrations:
+
 ```bash
 npm run db:migrate
 ```
@@ -110,11 +113,13 @@ npm run db:migrate
 **Note**: Database-level constraints (e.g., `endAt > startAt`, `rating 1..5`) should be added via raw SQL migrations if required, as Prisma schema doesn't support `@@check` directives.
 
 2. Generate Prisma client:
+
 ```bash
 npm run db:generate
 ```
 
 3. Seed the database with test data:
+
 ```bash
 npm run db:seed
 ```
@@ -122,6 +127,7 @@ npm run db:seed
 ### Development
 
 1. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -129,6 +135,7 @@ npm run dev
 2. Open [http://localhost:3000](http://localhost:3000)
 
 3. View database with Prisma Studio:
+
 ```bash
 npm run db:studio
 ```
@@ -136,12 +143,14 @@ npm run db:studio
 ## Available Scripts
 
 ### Development
+
 - `npm run dev` - Start development server with Turbopack
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run type-check` - Run TypeScript type checking
 
 ### Database
+
 - `npm run db:generate` - Generate Prisma client
 - `npm run db:migrate` - Run database migrations
 - `npm run db:studio` - Open Prisma Studio
@@ -149,12 +158,14 @@ npm run db:studio
 - `npm run db:reset` - Reset database and reseed
 
 ### Testing
+
 - `npm run test` - Run unit tests with Vitest
 - `npm run test:ui` - Run tests with Vitest UI
 - `npm run test:e2e` - Run E2E tests with Playwright
 - `npm run test:e2e:ui` - Run E2E tests with Playwright UI
 
 ### Code Quality
+
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
 - `npm run format:check` - Check code formatting
@@ -184,12 +195,14 @@ ai-rookie-final/
 ## Key Features Implementation
 
 ### Authentication Flow
+
 1. User enters email
 2. Magic link sent via Supabase Auth
 3. First-time users select role (learner/expert)
 4. Automatic user creation in database
 
 ### Booking Flow
+
 1. Learner browses experts
 2. Selects available time slot
 3. Payment authorized (not captured)
@@ -199,6 +212,7 @@ ai-rookie-final/
 7. If rejected: payment authorization released
 
 ### Payment System
+
 - Stripe payment intents with manual capture
 - Authorization on booking creation
 - Capture only after expert acceptance
@@ -206,6 +220,7 @@ ai-rookie-final/
 - Webhook handling for payment status updates
 
 ### Notification System
+
 - Template-based notifications
 - Multiple channels (in-app, email)
 - Scheduled reminders (24h, 1h, 5min before session)
@@ -214,21 +229,25 @@ ai-rookie-final/
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/signup` - User registration
 - `POST /api/auth/login` - Magic link login
 
 ### Bookings
+
 - `GET /api/bookings` - List user bookings
 - `POST /api/bookings` - Create new booking
 - `PATCH /api/bookings/[id]` - Update booking status
 - `DELETE /api/bookings/[id]` - Cancel booking
 
 ### Payments
+
 - `POST /api/payments/create-intent` - Create payment intent
 - `POST /api/payments/capture` - Capture payment
 - `POST /api/webhooks/stripe` - Stripe webhook handler
 
 ### Experts
+
 - `GET /api/experts` - List experts
 - `GET /api/experts/[id]` - Get expert details
 - `GET /api/experts/[id]/availability` - Get availability slots
@@ -236,6 +255,7 @@ ai-rookie-final/
 ## Database Schema
 
 ### Key Models
+
 - **User**: Basic user information with role
 - **ExpertProfile**: Expert-specific data (rates, bio, expertise)
 - **AvailabilitySlot**: Expert availability (recurring + exceptions)
@@ -249,16 +269,19 @@ ai-rookie-final/
 ## Testing Strategy
 
 ### Unit Tests
+
 - Component testing with React Testing Library
 - Business logic testing
 - Database model testing
 
 ### Integration Tests
+
 - API endpoint testing
 - Payment flow testing
 - Zoom integration testing
 
 ### E2E Tests
+
 - Complete booking flow
 - Authentication flow
 - Payment and refund flow
@@ -267,6 +290,7 @@ ai-rookie-final/
 ## Deployment
 
 ### Production Setup
+
 1. Set up production database
 2. Configure environment variables
 3. Set up Stripe webhooks
@@ -275,9 +299,11 @@ ai-rookie-final/
 6. Configure SMTP for emails
 
 ### Environment Variables
+
 Ensure all production environment variables are configured with production values.
 
 ### Database Migrations
+
 ```bash
 npx prisma migrate deploy
 ```
@@ -285,16 +311,19 @@ npx prisma migrate deploy
 ## Monitoring and Maintenance
 
 ### Health Checks
+
 - `/api/health` - Application health endpoint
 - Database connectivity checks
 - External service status
 
 ### Error Tracking
+
 - Sentry integration for error monitoring
 - Client and server-side error tracking
 - Performance monitoring
 
 ### Logging
+
 - Audit logs for all critical actions
 - Payment transaction logging
 - User activity tracking
