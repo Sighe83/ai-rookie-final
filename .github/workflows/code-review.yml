@@ -1,3 +1,4 @@
+---
 name: Automated Code Review
 
 on:
@@ -32,23 +33,23 @@ jobs:
 
       - name: Run TypeScript type checking
         run: npm run type-check
-        continue-on-error: true # Continue even if there are type errors for now
+        continue-on-error: true  # Continue even if there are type errors
 
       - name: Run unit tests
         run: npm run test -- --run
         env:
           NODE_ENV: test
-        continue-on-error: true # Continue even if no tests exist yet
+        continue-on-error: true  # Continue even if no tests exist yet
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-        continue-on-error: true # Continue if Playwright install fails
+        continue-on-error: true  # Continue if Playwright install fails
 
       - name: Run E2E tests
         run: npm run test:e2e
         env:
           NODE_ENV: test
-        continue-on-error: true # Continue even if E2E tests fail for now
+        continue-on-error: true  # Continue even if E2E tests fail
 
       - name: Build application
         run: npm run build
@@ -57,9 +58,9 @@ jobs:
           # Provide minimal required env vars for build
           NEXT_PUBLIC_SUPABASE_URL: 'https://placeholder.supabase.co'
           NEXT_PUBLIC_SUPABASE_ANON_KEY: 'placeholder-key'
-          DATABASE_URL: 'postgresql://placeholder:placeholder@localhost:5432/placeholder'
+          DATABASE_URL: 'postgresql://placeholder@localhost/placeholder'
           NEXTAUTH_SECRET: 'placeholder-secret'
-        continue-on-error: true # Continue even if build fails due to missing components
+        continue-on-error: true  # Continue if build fails
 
       - name: Generate code review summary
         if: always()
@@ -76,12 +77,12 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📊 Review Status:" >> $GITHUB_STEP_SUMMARY
           if [ "${{ job.status }}" = "success" ]; then
-            echo "✅ **All checks passed** - Code is ready for deployment"
+            echo "✅ **All checks passed** - Code ready for deployment"
           else
-            echo "❌ **Some checks failed** - Please review and fix issues before merging"
+            echo "❌ **Some checks failed** - Review required"
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🛠️ Next Steps:" >> $GITHUB_STEP_SUMMARY
           echo "- Review any failed checks above" >> $GITHUB_STEP_SUMMARY
           echo "- Fix identified issues" >> $GITHUB_STEP_SUMMARY
-          echo "- Ensure all tests pass locally before pushing" >> $GITHUB_STEP_SUMMARY
+          echo "- Test locally before pushing" >> $GITHUB_STEP_SUMMARY
